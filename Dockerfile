@@ -1,2 +1,2 @@
-FROM docker.io/rocker/r-ver:4.1.1@sha256:d2abf27fe2e8b0b5f4da68c018560c73e11c53098329246e3e6fe176698ef941
+FROM docker.io/rocker/r-ver:4.1.1@sha256:b852d7e75cbafd84c8cf95fccd2afa4d64646d8e5bc589df6d1db5a21bf56457
 
