@@ -5,3 +5,5 @@
 
 **/*.html
 .Rproj.user
+
+!hw/02/hw02-instructions.html
