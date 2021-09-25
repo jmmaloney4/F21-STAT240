@@ -60,7 +60,7 @@ Modify the code below so that in the resulting plot:
 ## modify this code
 ggplot(monona, aes(x = duration)) +
   geom_histogram(center = 70, binwidth = 5, fill = "forestgreen", color = "darkviolet") +
-  labs(title = "Duration of Lake Monona Ice Cover", x = "Days closed with Ice", y = "Total")
+  labs(title = "Duration of Lake Monona Ice Cover", x = "Days Closed with Ice", y = "Total")
 ```
 
 ### 3
@@ -69,9 +69,6 @@ Create a line plot with `duration` on the y axis and `year1` on the x axis. Add 
 Modify axis labels and add an appropriate title.
 
 ```{r problem3}
-min(monona$year1)
-max(monona$year1)
-
 monona %>% ggplot(aes(x = year1, y = duration)) + 
   labs(title = sprintf("Duration of Lake Mendota Ice Cover %s to %s", min(monona$year1), max(monona$year1)), x = "Year", y = "Duration") +
   geom_line() +
@@ -109,7 +106,6 @@ Add a horizontal line with an intercept at zero. *(See example from lecture usin
 Add a smooth curve to this residual plot as well.
 
 ```{r}
-monona$residuals
 ggplot(monona, aes(x = year1, y = residuals)) +
   geom_point() +
   geom_hline(aes(yintercept = 0)) +
@@ -121,7 +117,7 @@ what evidence from the residual plot indicates that a straight-line simple regre
 
 ### Response
 
-The residuals are approximately evenly distributed around zero, and this distribution doesn't seem to change over time. Thus the straight-line regression seems explain the data very well.
+The residuals are approximately normally distributed around zero, and this distribution doesn't seem to change over time. Thus the straight-line regression seems explain the data very well.
 
 ### 5
 
@@ -141,7 +137,6 @@ Select different colors to shade the interior and the boundaries of the bars.
 Add appropriate axis labels and a plot title.
 
 ```{r}
-monona$first_freeze
 ## Make the histogram
 ggplot(monona, aes(x = winter_day)) +
   labs(title = "Days between June 30 and First Freeze of Lake Monona", x = "Days since June 30", y = "Count") +
