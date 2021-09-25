@@ -1,5 +1,5 @@
 ---
-author: "YOUR NAME HERE"
+author: "Jack Maloney"
 output: html_document
 ---
 
@@ -42,7 +42,7 @@ Approximately how many winters had between 40 to 70 days where Lake Monona was a
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+16
 
 ### 2
 
@@ -59,7 +59,8 @@ Modify the code below so that in the resulting plot:
 ```{r problem2}
 ## modify this code
 ggplot(monona, aes(x = duration)) +
-  geom_histogram()
+  geom_histogram(center = 70, binwidth = 5, fill = "forestgreen", color = "darkviolet") +
+  labs(title = "Duration of Lake Monona Ice Cover", x = "Days closed with Ice", y = "Total")
 ```
 
 ### 3
@@ -68,7 +69,14 @@ Create a line plot with `duration` on the y axis and `year1` on the x axis. Add 
 Modify axis labels and add an appropriate title.
 
 ```{r problem3}
+min(monona$year1)
+max(monona$year1)
 
+monona %>% ggplot(aes(x = year1, y = duration)) + 
+  labs(title = sprintf("Duration of Lake Mendota Ice Cover %s to %s", min(monona$year1), max(monona$year1)), x = "Year", y = "Duration") +
+  geom_line() +
+  geom_smooth(color = "blue") +
+  geom_smooth(color = "red", method = "lm")
 ```
 
 - Compare the curve and the straight line; does the curve differ from the straight line in an important manner?
@@ -77,7 +85,9 @@ Modify axis labels and add an appropriate title.
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+The curve and the straight line don't appear to be different in any significant way.
+About 115 days.
+About 90 days.
 
 ### 4
 
@@ -99,7 +109,11 @@ Add a horizontal line with an intercept at zero. *(See example from lecture usin
 Add a smooth curve to this residual plot as well.
 
 ```{r}
-
+monona$residuals
+ggplot(monona, aes(x = year1, y = residuals)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0)) +
+  geom_smooth()
 ```
 
 Using the informal interpretation discussed in lecture,
@@ -107,7 +121,7 @@ what evidence from the residual plot indicates that a straight-line simple regre
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+The residuals are approximately evenly distributed around zero, and this distribution doesn't seem to change over time. Thus the straight-line regression seems explain the data very well.
 
 ### 5
 
@@ -127,8 +141,12 @@ Select different colors to shade the interior and the boundaries of the bars.
 Add appropriate axis labels and a plot title.
 
 ```{r}
+monona$first_freeze
 ## Make the histogram
-
+ggplot(monona, aes(x = winter_day)) +
+  labs(title = "Days between June 30 and First Freeze of Lake Monona", x = "Days since June 30", y = "Count") +
+  geom_histogram(center = 154, binwidth = 5, color = "blue", fill = "lightblue")
+  
 ```
 
 
@@ -146,7 +164,8 @@ ggplot(monona, aes(x = winter_day)) +
   xlab("Days after June 30") +
   ylab("Count") +
   ggtitle("Lake Monona First Freeze Distribution",
-          subtitle = "1851 - 2021")
+          subtitle = "1851 - 2021") +
+  scale_x_continuous(breaks = c(154, 169, 184, 199, 214), labels = c("Dec 1", "Dec 16", "Dec 31", "Jan 15", "Jan 30"))
 ```
 
 ### 7
@@ -177,7 +196,7 @@ What are some faults that this basic plot has?
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+It has no title, and axis labels are not capitalized. Labels of categories on x axis are not legible. It has a small amount of data that is very far away from the rest of the data, causing most of the data to be squished together, and thus hard to read, near the bottom.
 
 The next code chunk adds several lines of code.
 Explain the effect that each additional line highlighted with a comment does to the plot.
@@ -203,15 +222,15 @@ ggplot(exo, aes(x = method, y = mass)) +
 #### (A) effect of scale_y_continuous()
 ##### trans = "log10"
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+Makes the y axis (which then becomes the x axis later) a log (base 10) scale instead of a linear scale.
 
 ##### label = comma
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+Formats the y axis (later x axis) labels to have commas separating the thousands.
 
 #### (B) effect of coord_flip()
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+Flips the x and y axes.
 
 
 
@@ -222,21 +241,24 @@ Use different colors for the interior of the density and the boundary line.
 Describe the shape of exoplanet masses.
 
 ```{r}
-
+ggplot(exo, aes(x = mass)) + 
+  geom_density(color = "red", fill = "pink")
 ```
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+A sharp spike around 100 solar masses.
 
 Make a second density plot for the base-10 logarithm of masses instead.
 Describe the shape of the log-transformed exoplanet masses.
 
 ```{r}
-
+ggplot(exo, aes(x = mass)) + 
+  scale_x_log10() +
+  geom_density(color = "red", fill = "pink")
 ```
 
 ### Response
 
-REPLACE THIS TEXT WITH YOUR RESPONSE
+Bimodal with two groups of stars, one around 10 solar masses, and another around 300 solar masses.
 
