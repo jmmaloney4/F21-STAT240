@@ -216,28 +216,30 @@ US wait times are longer than non-US wait times in less than 5% of cases. These 
 - Add a column named `booth_rate` to the data set which estimates the average number of passengers per booth per hour. For example, if 1000 passengers arrive between 05:00 and 06:00, the average wait time is 40 minutes, and there are 10 booths open, then an estimate of the total number of passengers per booth per hour could be computed like this: 1000/10 = 100 passengers per booth; (40 minutes per passenger / 1 hour per 60 minutes) = 2/3 hours per passenger; booth rate = 100 / (2/3) = (1000 * 60) / (10 * 40) = 150 passengers per booth per hour. This is an estimate because it assumes available booths change on the hour and it ignores how rates change when passenger wait durations stretch into the next time period.  
 - Add another column called `time_of_day` which takes the value "overnight" from 1am to 5am, "early morning" from 5am to 8am, "morning" from 8am to noon, "afternoon" from noon to 5pm, and "early evening" from 5pm to 8pm, and "late evening" from 8pm to 1am.  
 - Use `reorder()` to put the `time_of_day` variable in this order.  
--  Filter out cases where there are fewer than 200 total passengers, the average wait time is zero, or the booth rate is over 500.  
+-  Filter out cases where there are fewer than 200 total passengers, the average wait time is zero, or the booth rate is over 500.
 -  Make side-by-side boxplots of the booth rate versus the day of the week using different colors for each day of the week, and different facets for each time of day.
 -  Answer the question below.
 
 ```{r}
 case_time_of_day = function(h) {
   case_when(
-    h == "0100 - 0200" | h == "0200 - 0300" | h == "0300 - 0400" | h == "0400 - 0500" ~ "overnight",
-    h == "0500 - 0600" | h == "0600 - 0700" | h == "0700 - 0800" ~ "early morning",
-    h == "0800 - 0900" | h == "0900 - 1000" | h == "1000 - 1100" | h == "1100 - 1200" ~ "morning",
-    h == "1200 - 1300" | h == "1300 - 1400" | h == "1400 - 1500" | h == "1500 - 1600" | h == "1600 - 1700" ~ "afternoon",
-    h == "1700 - 1800" | h == "1800 - 1900" | h == "1900 - 2000" ~ "early evening",
-    h == "2000 - 2100" | h == "2100 - 2200" | h == "2200 - 2300" | h == "2300 - 0000" | h == "0000 - 0100" ~ "late evening"
+    h == "0100 - 0200" | h == "0200 - 0300" | h == "0300 - 0400" | h == "0400 - 0500" ~ 1,
+    h == "0500 - 0600" | h == "0600 - 0700" | h == "0700 - 0800" ~ 2,
+    h == "0800 - 0900" | h == "0900 - 1000" | h == "1000 - 1100" | h == "1100 - 1200" ~ 3,
+    h == "1200 - 1300" | h == "1300 - 1400" | h == "1400 - 1500" | h == "1500 - 1600" | h == "1600 - 1700" ~ 4,
+    h == "1700 - 1800" | h == "1800 - 1900" | h == "1900 - 2000" ~ 5,
+    h == "2000 - 2100" | h == "2100 - 2200" | h == "2200 - 2300" | h == "2300 - 0000" | h == "0000 - 0100" ~ 6
   )
 }
 
-order = c("overnight", "early morning", "morning", "afternoon", "early evening", "late evening")
+times_of_day = c("overnight", "early morning", "morning", "afternoon", "early evening", "late evening")
+to_str = function(i) { times_of_day[i][1] }
+
+to_str(1)
 
 ord %>%
-  mutate(booth_rate = (passengers * 60) / (booths * all_avg_wait),
-         time_of_day_u = case_time_of_day(hour)) %>%
-  mutate(time_of_day = reorder(time_of_day_u, order)) %>%
+  mutate(booth_rate = (passengers * 60) / (booths * all_avg_wait),         
+         time_of_day = case_time_of_day(hour) %>% reorder(times_of_day[.], .)) %>%
   filter(passengers >= 200, all_avg_wait != 0, booth_rate <= 500) %>%
   ggplot(aes(x= wday, y = booth_rate, fill = wday)) +
   geom_boxplot() +
