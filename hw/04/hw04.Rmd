@@ -35,7 +35,6 @@ Each data set is in a separate CSV file:
 - Print the first 20 rows of the data frame and at least 4 columns.  
 
 ```{r}
-
 years = 2016:2020
 ord = str_c("../../data/ORD-", years, ".csv") %>%
   map(read_csv) %>%
@@ -44,11 +43,11 @@ ord = str_c("../../data/ORD-", years, ".csv") %>%
          month = month(date, label = TRUE, abbr = TRUE), 
          day = day(date), 
          wday = wday(date, label = TRUE, abbr = TRUE)) %>%
-  select(year, month, day, wday, everything(), -terminal) %>%
+  select(airport, date, year, month, day, wday, everything(), -terminal) %>%
   rename(passengers = all_total, flights = all_flights, booths = all_booths) %>%
   arrange(date, hour)
-print(ord, n = 20, width = 4)
 
+print(ord, n = 20)
 ```
 
 - After these changes, how many rows and columns are in the complete data set?
@@ -196,7 +195,7 @@ Data tends to be above the 45 degree line, indicating that the wait for non us p
 
 What are the primary differences between US and Non-US passengers, and are the patterns different for different seasons?
 
-When the wait is long, it tends to be much longer for non us passengers.
+When the wait is long, it tends to be much longer for non us passengers. Each season tends to be approximately the same, but the winter might tend have a slightly shorter wait time in general than the other seasons.
 
 ### 7
 
@@ -204,12 +203,12 @@ Calculate separately for each year, the fraction of cases (a case is a single ho
 
 ```{r}
 ord %>% 
-  filter(non_us_avg_wait < us_avg_wait) %>%
+  filter(non_us_avg_wait > us_avg_wait) %>%
   nrow() /
   nrow(ord)
 ```
 
-US wait times are longer than non-US wait times in less than 5% of cases. These are the data that fall below the 45 degree line in the above charts, and visually we can see that there is not much data there.
+US wait times are shorter than non-US wait times in over 90% of cases. These are the data that fall above the 45 degree line in the above charts, and visually we can see that this is most of the data.
 
 ### 8
 
@@ -234,8 +233,6 @@ case_time_of_day = function(h) {
 
 times_of_day = c("overnight", "early morning", "morning", "afternoon", "early evening", "late evening")
 to_str = function(i) { times_of_day[i][1] }
-
-to_str(1)
 
 ord %>%
   mutate(booth_rate = (passengers * 60) / (booths * all_avg_wait),         
