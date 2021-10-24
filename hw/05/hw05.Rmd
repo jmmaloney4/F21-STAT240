@@ -1,5 +1,5 @@
 ---
-author: "REPLACE THIS TEXT WITH YOUR NAME"
+author: "Jack Maloney"
 title: "Assignment 5"
 output: html_document
 ---
@@ -118,14 +118,23 @@ Describe any discrepancies you discover.
 
 Write code using the function `anti_join()` to answer the question.
 
+```{r}
+anti_join(player_bat_value, player_bat_basic, by = "ID")
+anti_join(player_bat_basic, player_bat_value, by = "ID")
+```
+
+David Phelps is listed in `player_bat_value` but not in `player_bat_basic`.
+
 ### (b)
 
 Repeat for the files `player_pitch_basic` and `player_pitch_value`
 
 ```{r}
-
+anti_join(player_pitch_value, player_pitch_basic, by = "ID")
+anti_join(player_pitch_basic, player_pitch_value, by = "ID")
 ```
 
+All players in `player_pitch_basic` are also in `player_pitch_value`.
 
 ### 2
 
@@ -141,7 +150,15 @@ Arrange the rows by division, and then from highest to lowest winning percentage
 Print the entire table.
 
 ```{r}
+teams = abbr %>%
+  inner_join(player_bat_basic %>% group_by(Tm) %>% select(Tm, Lg), by = c("Abbr" = "Tm")) %>%
+  inner_join(divisions, by = c("Team" = "Tm")) %>%
+  inner_join(standings %>% select(Tm, W, L), by = c("Team" = "Tm")) %>%
+  mutate(Pct = W / (W+L)) %>%
+  rename(Leauge = Lg) %>%
+  distinct()
 
+teams %>% print(n = Inf, width = Inf)
 ```
 
 
@@ -153,7 +170,11 @@ Then, reshape this table to a wider format with `Place` as one column and the si
 Display the entire table.
 
 ```{r}
-
+teams %>%
+  group_by(Division) %>%
+  mutate(Place = rank(Pct, ties.method = "first")) %>%
+  select(Abbr, Division, Place) %>%
+  pivot_wider(id_cols = "Place", names_from = c("Division"), values_from = c("Abbr"))
 ```
 
 ### 4
@@ -170,14 +191,25 @@ Sort the table in descending order of `OPS`.
 Display the first ten rows of the data set and all columns.
 
 ```{r}
+bat_pitch = player_bat_basic %>%
+  inner_join(player_pitch_basic, by = "ID") %>%
+  filter(PA >= 50, IP >= 50) %>%
+  select(Name = Name.x, Tm = Tm.x, PA, BA, HR = HR.x, OPS, ERA, SO = SO.y, IP) %>%
+  arrange(desc(OPS))
 
+bat_pitch %>%
+  print(n = 10, width = Inf)
 ```
 
 Make a boxplot of the `OPS` variable. Describe any notable features in this plot.
 
 ```{r}
-
+bat_pitch %>%
+  ggplot(aes(y = OPS)) +
+  geom_boxplot()
 ```
+
+There is an outlier in the OPS variable. Otherwise it seems pretty evenly distributed around the Median.
 
 ### 5
 
@@ -201,7 +233,16 @@ The resulting data frame should have the following columns of data.
 - `obese_p` = estimated proportion of obese adults (by zip and sex)
 
 ```{r}
-
+obesity = read_csv("../../data/obesity.csv") %>%
+  filter(age != "05-17") %>%
+  add_count(zip) %>%
+  group_by(age, sex, zip) %>%
+  filter(nn == 8, !is.na(obese), !is.na(n)) %>%
+  mutate(obese_p = obese / n) %>%
+  group_by(sex, zip) %>%
+  summarize(adult_n = sum(pop), obese_p = sum(obese) / sum(n)) %>%
+  mutate(obese_n = obese_p * adult_n) %>%
+  select(zip, sex, adult_n, obese_n, obese_p)
 ```
 
 ### 6
@@ -216,13 +257,18 @@ After the transformation, you should have columns
 This action will require both reshaping data and transforming the values and column names.
 
 ```{r}
-
+edu = read_csv("../../data/education.csv") %>%
+  # group_by(zip) %>%
+  pivot_longer(cols = c(pct_m_bach, pct_f_bach)) %>%
+  mutate(sex = ifelse(name=="pct_m_bach", "male", "female")) %>%
+  rename(pct_bach = value) %>%
+  select(zip, sex, pct_bach)
 ```
 
 Print out all columns of the first ten rows of the education data frame.
 
 ```{r}
-
+edu %>% print(n = 10, width = Inf)
 ```
 
 ### 7
@@ -230,7 +276,7 @@ Print out all columns of the first ten rows of the education data frame.
 Join the two data sets together by adding the `pct_bach` column to the data set from problem 5.
 
 ```{r}
-
+obese_edu = inner_join(obesity, edu, by = c("zip", "sex"))
 ```
 
 Using the joined data set and the adult population, calculate the statewide percentages of men and women aged 25 and older with a bachelors degree.
@@ -238,7 +284,11 @@ Using the joined data set and the adult population, calculate the statewide perc
 Display the numerator and denominator for each percentage calculation as part of your solution.
 
 ```{r}
-
+obese_edu %>%
+  group_by(sex) %>%
+  summarize(w_bach = sum(adult_n * (pct_bach / 100)), total = sum(adult_n)) %>%
+  mutate(pct_bach = w_bach / total) %>%
+  select(sex, pct_bach, numerator = w_bach, denominator = total)
 ```
 ### 8
 
@@ -247,9 +297,14 @@ Make a scatter plot with one point per zip code and sex that displays the *perce
 - Create appropriate labels and titles for the plot.  
 
 ```{r}
-
+obese_edu %>% 
+  ggplot(aes(x = pct_bach, y = obese_p)) +
+  geom_point(aes(color = sex)) +
+  geom_smooth(aes(color = sex), method = "lm") +
+  labs(title = "Rates of Bachelor's Degrees vs Rates of Obesity by Zip Code", x = "Percent of Population over 25 with a Bachelor's Degree", y = "Percent of Population Considered Obese", color = "Sex")
 ```
 
 Comment on patterns in the plot of the data.
 What is the evident relationship between obesity and obtaining a college education?
 
+The relationship appears to be stronger for males than for females. Both groups show a strong correlation between increasing rates of bachelors degrees and decreasing rates of obesity. This relationship might be influenced by a small portion of the data that has much higher rates of bachelors degrees and much lower rates of obesity, and might not be as stark within zip codes that have lower rates (< 35% ish) of bachelors degrees. 
