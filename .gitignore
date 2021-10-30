@@ -7,4 +7,6 @@
 .Rproj.user
 
 !hw/02/hw02-instructions.html
-hw/03/hw03_files/
+
+**/*_cache/
+**/*_files/
